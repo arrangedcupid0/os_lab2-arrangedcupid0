@@ -18,6 +18,11 @@ int main(int argc, char** argv)
     *   If not, print a short usage message and return 1.
     *   Note: argc will always be >= 1 as the executable name is always passed as an argument.
     */
+    if(!(argc == 3))
+    {
+	cout << "Incorrect number of arguments passed." << endl;
+	return 1;
+    }
     
     // Initializing Variables
     // Variable used by both parent and child to track the number of bytes read or written.
@@ -30,6 +35,11 @@ int main(int argc, char** argv)
     *   Create a pipe with an appropriate error check using the file descriptor array above.
     *   If the pipe failed print a short error message and return 1.
     */
+    if(pipe(fd) == -1)
+    {
+	cout << "Pipe failed." << endl;
+	return 1;
+    }
 
 	/*
     *   === TODO 3 ===
@@ -39,7 +49,27 @@ int main(int argc, char** argv)
     *       The parent process is executing.
     *       The child process is executing.
     */
+    pid_t pid;
+    pid = fork();
+    if(pid < 0)
+    {
+	cout << "Fork failed." << endl;
+	return -1;
+    } else if(pid == 0) {
+	
+    } else {
+	close(fd[READ_END]);
+	FILE* fp = fopen("input.txt", "r");
+	bool more = true;
+	while(more)
+	{
+		
+	}
 
+	wait(NULL);
+	cout << "Child complete. Parent returning now." << endl;
+	return 0;
+    }
     /*
     *   === TODO 4 ===
     *   Impliment code for the parrent process
