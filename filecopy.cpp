@@ -63,9 +63,14 @@ int main(int argc, char** argv)
 	bool more = true;
 	while(more)
 	{
-		
+		write(read_buffer, &fp, strlen(BUFFER_SIZE) + 1);
+		write(fd(READ_END), read_buffer, sizeof(*read_buffer));
+		if(read_buffer < BUFFER_SIZE)
+		{
+			more = false;
+		}
 	}
-
+	fread(BUFFER_SIZE,
 	wait(NULL);
 	cout << "Child complete. Parent returning now." << endl;
 	return 0;
