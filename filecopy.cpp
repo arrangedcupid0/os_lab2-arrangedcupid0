@@ -1,15 +1,18 @@
 #include <iostream>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <cstring>
 
 #define BUFFER_SIZE 25  // Read Buffer Size
 #define READ_END 0      // Read end of the pipe used in the file descriptor array
 #define WRITE_END 1     // Write end of the pipe used in the file descriptor array
 
+using namespace std;
 /*
 * @Parem argc: Number of passed arguments
 * @Parem argv: Values of passed arguments
 */
+int numRead = 0;
 int main(int argc, char** argv)
 {
     /*
@@ -23,10 +26,8 @@ int main(int argc, char** argv)
 	cout << "Incorrect number of arguments passed." << endl;
 	return 1;
     }
-    
     // Initializing Variables
     // Variable used by both parent and child to track the number of bytes read or written.
-    int numRead;
 	char read_buffer[BUFFER_SIZE];  // Read buffer for input file and pipe.
 	int fd[2];                      // File descriptor array used to create a pipe.
 
@@ -40,7 +41,6 @@ int main(int argc, char** argv)
 	cout << "Pipe failed." << endl;
 	return 1;
     }
-
 	/*
     *   === TODO 3 ===
     *   Fork the child process.
@@ -56,21 +56,39 @@ int main(int argc, char** argv)
 	cout << "Fork failed." << endl;
 	return -1;
     } else if(pid == 0) {
-	
-    } else {
-	close(fd[READ_END]);
-	FILE* fp = fopen("input.txt", "r");
+	close(fd[WRITE_END]);
+	FILE* fp = fopen("output.txt", "w");
 	bool more = true;
+	int numWritten = BUFFER_SIZE + 1;
 	while(more)
 	{
-		write(read_buffer, &fp, strlen(BUFFER_SIZE) + 1);
-		write(fd(READ_END), read_buffer, sizeof(*read_buffer));
-		if(read_buffer < BUFFER_SIZE)
+ 		int numRead = read(fd[READ_END], read_buffer, BUFFER_SIZE);
+		numWritten = fwrite(read_buffer, sizeof(*read_buffer), numRead, fp);
+		if(numWritten < BUFFER_SIZE)
 		{
 			more = false;
 		}
 	}
-	fread(BUFFER_SIZE,
+	close(fd[READ_END]);
+	fclose(fp);
+	return 0;
+    } else {
+	close(fd[READ_END]);
+	FILE* fp = fopen("input.txt", "r");
+	bool more = true;
+	int numRead = BUFFER_SIZE + 1;
+	while(more)
+	{
+		numRead = fread(read_buffer, sizeof(*read_buffer), BUFFER_SIZE, fp);
+		write(fd[WRITE_END], read_buffer, BUFFER_SIZE);
+		if(numRead < BUFFER_SIZE)
+		{
+			more = false;
+		}
+cout << "pnumRead " << numRead << endl;
+	}
+	close(fd[WRITE_END]);
+	fclose(fp);
 	wait(NULL);
 	cout << "Child complete. Parent returning now." << endl;
 	return 0;
